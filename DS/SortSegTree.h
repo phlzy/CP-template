@@ -30,7 +30,7 @@ namespace OY {
         template <typename Tp, Tp Identity, typename Operation, typename Reversed>
         struct BaseMonoid {
             using value_type = Tp;
-            static constexpr Tp identity() { return Identity; }
+            static constexpr value_type identity() { return Identity; }
             static value_type op(const value_type &x, const value_type &y) { return Operation()(x, y); }
             static value_type reversed(const value_type &x) { return Reversed()(x); }
         };
