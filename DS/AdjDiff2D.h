@@ -65,12 +65,12 @@ namespace OY {
             value_type _get(size_type i, size_type j) const { return ~i && ~j ? m_sum[i * m_column + j] : group::identity(); }
             void _adjacent_difference() const {
                 for (size_type i = m_row - 1; ~i; i--)
-                    for (size_type j = m_column - 1; ~j; j--) _plus(i, j, _get(i - 1, j - 1) - _get(i - 1, j) - _get(i, j - 1));
+                    for (size_type j = m_column - 1; ~j; j--) _plus(i, j, group::op(_get(i - 1, j - 1), group::inverse(group::op(_get(i - 1, j), _get(i, j - 1)))));
                 m_state = TableState(m_state - 1);
             }
             void _partial_sum() const {
                 for (size_type i = 0; i != m_row; i++)
-                    for (size_type j = 0; j != m_column; j++) _minus(i, j, _get(i - 1, j - 1) - _get(i - 1, j) - _get(i, j - 1));
+                    for (size_type j = 0; j != m_column; j++) _minus(i, j, group::op(_get(i - 1, j - 1), group::inverse(group::op(_get(i - 1, j), _get(i, j - 1)))));
                 m_state = TableState(m_state + 1);
             }
         public:
@@ -94,10 +94,10 @@ namespace OY {
             size_type row() const { return m_row; }
             size_type column() const { return m_column; }
             void add(size_type i, size_type j, value_type inc) { _auto_to_value(), _plus(i, j, inc); }
-            void modify(size_type i, size_type j, value_type val) { _auto_to_value(), _plus(i, j, val - _get(i, j)); }
+            void modify(size_type i, size_type j, value_type val) { _auto_to_value(), _plus(i, j, group::op(val, group::inverse(_get(i, j)))); }
             void add(size_type r1, size_type r2, size_type c1, size_type c2, value_type inc) { _auto_to_difference(), _plus(r1, c1, inc), _minus(r1, c2 + 1, inc), _minus(r2 + 1, c1, inc), _plus(r2 + 1, c2 + 1, inc); }
             value_type query(size_type i, size_type j) const { return _auto_to_value(), _get(i, j); }
-            value_type query(size_type r1, size_type r2, size_type c1, size_type c2) const { return _auto_to_presum(), _get(r1 - 1, c1 - 1) - _get(r1 - 1, c2) - _get(r2, c1 - 1) + _get(r2, c2); }
+            value_type query(size_type r1, size_type r2, size_type c1, size_type c2) const { return _auto_to_presum(), group::op(group::op(_get(r1 - 1, c1 - 1), _get(r2, c2)), group::inverse(group::op(_get(r1 - 1, c2), _get(r2, c1 - 1)))); }
             value_type query_all() const { return _auto_to_presum(), _get(m_row - 1, m_column - 1); }
             void switch_to_difference() const {
                 if (m_state == TABLE_DIFFERENCE) return;
